@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>后台 học tập - Lưu trữ tài liệu</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        nav {
+            width: 250px;
+            background-color: #2b7cff;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        nav .section {
+            margin-bottom: 20px;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav ul li {
+            margin: 5px 0;
+            cursor: pointer;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        nav ul li:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            background: #f4f4f4;
+            overflow-y: auto;
+        }
+
+        .box {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-detail input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .note-detail textarea {
+            width: 100%;
+            height: 300px;
+        }
+
+        #addNoteBtn {
+            margin-top: 15px;
+            background-color: #2b7cff;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="section">
+            <h2>📚 Hộp của tôi</h2>
+            <ul id="boxList">
+                <li onclick="selectBox('HTML')">HTML</li>
+                <li onclick="selectBox('JavaScript')">JavaScript</li>
+            </ul>
+        </div>
+        <div class="section">
+            <h2>📝 Bài học</h2>
+            <ul id="noteTitles"></ul>
+            <button id="addNoteBtn" onclick="addNote()">➕ Thêm ghi chú mới</button>
+        </div>
+    </nav>
+    <main>
+        <div class="box">
+            <div class="note-detail">
+                <input type="text" id="noteTitleInput" placeholder="Tiêu đề bài học" />
+                <textarea id="noteContentInput" placeholder="Nội dung bài học..."></textarea>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentBox = 'HTML';
+        let currentNoteIndex = null;
+
+        function selectBox(boxName) {
+            currentBox = boxName;
+            currentNoteIndex = null;
+            renderNoteTitles();
+            clearNoteEditor();
+        }
+
+        function renderNoteTitles() {
+            const list = document.getElementById('noteTitles');
+            list.innerHTML = '';
+            const notes = JSON.parse(localStorage.getItem(currentBox)) || [];
+            notes.forEach((note, index) => {
+                const li = document.createElement('li');
+                li.innerText = note.title || 'Không có tiêu đề';
+                li.onclick = () => loadNote(index);
+                list.appendChild(li);
+            });
+        }
+
+        function loadNote(index) {
+            const notes = JSON.parse(localStorage.getItem(currentBox)) || [];
+            const note = notes[index];
+            currentNoteIndex = index;
+            document.getElementById('noteTitleInput').value = note.title;
+            document.getElementById('noteContentInput').value = note.content;
+        }
+
+        function addNote() {
+            const notes = JSON.parse(localStorage.getItem(currentBox)) || [];
+            const newNote = { title: 'Bài học mới', content: '' };
+            notes.push(newNote);
+            localStorage.setItem(currentBox, JSON.stringify(notes));
+            renderNoteTitles();
+        }
+
+        function saveCurrentNote() {
+            if (currentNoteIndex === null) return;
+            const notes = JSON.parse(localStorage.getItem(currentBox)) || [];
+            notes[currentNoteIndex].title = document.getElementById('noteTitleInput').value;
+            notes[currentNoteIndex].content = document.getElementById('noteContentInput').value;
+            localStorage.setItem(currentBox, JSON.stringify(notes));
+            renderNoteTitles();
+        }
+
+        function clearNoteEditor() {
+            document.getElementById('noteTitleInput').value = '';
+            document.getElementById('noteContentInput').value = '';
+        }
+
+        window.onload = function () {
+            selectBox(currentBox);
+            document.getElementById('noteTitleInput').addEventListener('input', saveCurrentNote);
+            document.getElementById('noteContentInput').addEventListener('input', saveCurrentNote);
+        };
+    </script>
+</body>
+
+</html>
